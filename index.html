@@ -1483,7 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gestureLocked || isClosing || !shown || isMoving) return;
             const diff     = e.changedTouches[0].pageY - touchStartY;
             const velocity = Math.abs(diff) / (performance.now() - touchStartTime || 1);
-            if (velocity > 0.2 && Math.abs(diff) > 30) {
+            if (velocity > 0.9 && Math.abs(diff) > 90) {
                 gestureLocked = true;
                 runFlick(diff < 0 ? 'flick-up' : 'flick-down');
                 setTimeout(() => gestureLocked = false, TIMING.GESTURE_LOCK);
@@ -1724,3 +1724,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
