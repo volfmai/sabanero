@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Component — სატესტო გვერდი</title>
+
+    <!-- forceMobile must run BEFORE CSS is parsed — sets html.force-mobile class -->
+    <script>
+        if (new URLSearchParams(window.location.search).has('mobile')) {
+            document.documentElement.classList.add('force-mobile');
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           PAGE BASE
+        ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink: #0d0d0d;
+            --ink-2: #3a3a3a;
+            --ink-3: #777;
+            --bg: #f6f4f0;
+            --white: #ffffff;
+            --accent: #d63031;
+            --border: #e2ddd7;
+            --heading-font: 'Syne', sans-serif;
+            --body-font: 'DM Sans', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--body-font);
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        img { display: block; max-width: 100%; }
+
+        /* ============================================================
+           MOBILE / DESKTOP VISIBILITY
+        ============================================================ */
+
+        /* Real device breakpoints */
+        @media (min-width: 1281px) { .mobile-only  { display: none !important; } }
+        @media (max-width: 1280px) { .desktop-only { display: none !important; } }
+
+        /* ?mobile param overrides — html class is set in <head> before paint.
+           .sticky-banner excluded — JS controls its display via inline style + .visible class. */
+        html.force-mobile .mobile-only:not(.sticky-banner)  { display: block !important; }
+        html.force-mobile .desktop-only { display: none  !important; }
+
+        /* sticky in force-mobile: always hidden until JS adds .visible */
+        html.force-mobile .sticky-banner.mobile-only         { display: none; }
+        html.force-mobile .sticky-banner.mobile-only.visible { display: flex !important; }
+
+        .is-hidden { display: none !important; pointer-events: none !important; }
+
+        /* ============================================================
+           HEADER
+        ============================================================ */
+        .site-header {
+            background: var(--ink);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .header-top {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .site-logo {
+            font-family: var(--heading-font);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .logo-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .logo-suffix { color: rgba(255,255,255,0.35); }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-actions a {
+            color: rgba(255,255,255,0.65);
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .header-actions a:hover { color: white; }
+
+        .header-subscribe {
+            background: var(--accent);
+            color: white !important;
+            padding: 7px 16px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .header-nav {
+            background: rgba(255,255,255,0.04);
+            padding: 0 24px;
+        }
+
+        .header-nav ul {
+            display: flex;
+            list-style: none;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .header-nav ul li a {
+            display: block;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 11px 16px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .header-nav ul li a:hover,
+        .header-nav ul li.active a {
+            color: white;
+            border-bottom-color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .header-actions .hide-mobile { display: none; }
+            .header-nav { display: none; }
+        }
+
+        html.force-mobile .header-actions .hide-mobile { display: none; }
+        html.force-mobile .header-nav { display: none; }
+
+        /* ============================================================
+           PAGE LAYOUT
+        ============================================================ */
+        .page-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px 48px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 336px;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 1280px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .sidebar       { display: none !important; }
+        }
+
+        /* force-mobile: single column, no sidebar */
+        html.force-mobile .content-grid { grid-template-columns: 1fr; }
+        html.force-mobile .sidebar       { display: none !important; }
+
+        /* ============================================================
+           ARTICLE
+        ============================================================ */
+        .article-main { min-width: 0; }
+
+        .article-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .kicker-tag {
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .kicker-section {
+            color: var(--ink-3);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .article-title {
+            font-family: var(--heading-font);
+            font-size: clamp(26px, 4vw, 42px);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .article-deck {
+            font-size: 18px;
+            color: var(--ink-2);
+            line-height: 1.5;
+            margin-bottom: 24px;
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .author-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .author-info  { flex: 1; }
+        .author-name  { font-size: 13px; font-weight: 600; color: var(--ink); }
+        .article-date { font-size: 12px; color: var(--ink-3); }
+        .article-share { display: flex; gap: 8px; margin-left: auto; }
+
+        .share-btn {
+            background: var(--border);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--ink-2);
+            transition: background 0.2s;
+        }
+        .share-btn:hover { background: #d5cec6; }
+
+        .article-hero {
+            width: 100%;
+            aspect-ratio: 16/7;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 8px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(214,48,49,0.3) 0%, transparent 60%);
+        }
+
+        .hero-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        /* ============================================================
+           CONTENT BLOCKS
+        ============================================================ */
+        .content-card {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 36px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+        }
+
+        .content-card p {
+            color: var(--ink-2);
+            margin-bottom: 18px;
+            font-size: 16px;
+            line-height: 1.75;
+        }
+        .content-card p:last-child { margin-bottom: 0; }
+
+        .content-card h2 {
+            font-family: var(--heading-font);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+            margin: 32px 0 14px;
+            letter-spacing: -0.4px;
+        }
+        .content-card h2:first-child { margin-top: 0; }
+
+        .content-card h3 {
+            font-family: var(--heading-font);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 24px 0 10px;
+        }
+
+        .content-card blockquote {
+            background: #f9f7f4;
+            border-left: 4px solid var(--accent);
+            padding: 18px 22px;
+            margin: 24px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .content-card blockquote p {
+            font-size: 17px;
+            font-style: italic;
+            color: var(--ink-2);
+            margin-bottom: 8px;
+        }
+
+        .content-card blockquote cite {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--ink-3);
+        }
+
+        .inline-image {
+            width: 100%;
+            aspect-ratio: 16/7;
+            border-radius: 6px;
+            margin: 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .tag {
+            background: #f0ece6;
+            color: var(--ink-2);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        /* ============================================================
+           SIDEBAR
+        ============================================================ */
+        .sidebar { position: sticky; top: 100px; }
+        .sidebar-block { margin-bottom: 20px; }
+
+        .sidebar-heading {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--ink-3);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .related-card {
+            background: var(--white);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .related-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .related-text h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.4;
+            margin-bottom: 3px;
+        }
+        .related-text span { font-size: 11px; color: var(--ink-3); }
+
+        /* ============================================================
+           AD LABEL
+        ============================================================ */
+        .ad-label-row {
+            text-align: center;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ink-3);
+            margin-bottom: 4px;
+            opacity: 0.6;
+        }
+
+        /* ============================================================
+           FOOTER
+        ============================================================ */
+        #footer {
+            background: var(--ink);
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 48px;
+        }
+
+        .footer-logo {
+            font-family: var(--heading-font);
+            font-size: 20px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: -0.5px;
+        }
+
+        .footer-copy { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+        /* ============================================================
+           PRELOADER RESET BUTTON
+        ============================================================ */
+        #preloader-reset-btn {
+            position: fixed;
+            bottom: 100px;
+            left: 12px;
+            z-index: 300000;
+            background: #00b894;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 11px;
+            font-family: var(--body-font);
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,184,148,0.45);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            line-height: 1.2;
+        }
+
+        #preloader-reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 18px rgba(0,184,148,0.5);
+        }
+
+        #preloader-reset-btn:active { transform: scale(0.97); }
+        #preloader-reset-btn .ico   { font-size: 20px; }
+        #preloader-reset-btn .lbl   { font-size: 9px; opacity: 0.85; text-align: center; }
+
+
+        /* ============================================================
+           SECTION 5 — AD COMPONENT CSS (ზუსტი კოდი, უცვლელი)
+        ============================================================ */
+
+        :root {
+            --x-speed: 1.5s;
+            --banner-melt: 0.8s;
+            --start-delay: 0s;
+        }
+
+        .sticky-banner {
+            position: fixed;
+            bottom: env(safe-area-inset-bottom, 0);
+            left: 0;
+            width: 100%;
+            z-index: 199999;
+            pointer-events: none;
+            display: none;
+            justify-content: center;
+            touch-action: pan-y;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+
+        .sticky-banner.visible {
+            display: flex !important;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .p-banner {
+            background: #1a1a1a;
+            width: calc(100% - 48px);
+            max-width: 1232px;
+            min-height: 44px;
+            height: auto;
+            color: #ffffff;
+            border-radius: 8px 8px 0 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            pointer-events: auto;
+            -webkit-backface-visibility: hidden;
+            position: relative;
+            will-change: transform;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden !important;
+            isolation: isolate !important;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+        }
+
+        .banner-content {
+            width: 100%;
+            border-radius: inherit;
+            overflow: hidden !important;
+            isolation: isolate;
+        }
+
+        .banner-content > *,
+        .banner-content a,
+        .banner-content img,
+        .p-banner img {
+            max-width: 100% !important;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #banner-wrapper-desktop .p-banner img { max-height: 160px !important; }
+        #banner-wrapper-mobile  .p-banner img { max-height: 150px !important; }
+
+        #banner-wrapper-desktop .p-banner { min-height: 160px !important; }
+        #banner-wrapper-mobile  .p-banner { min-height: 150px !important; }
+
+        .close-trigger {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .close-trigger svg {
+            width: 36px;
+            height: 36px;
+            display: block;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        @media screen and (max-width: 767px) {
+            .close-trigger {
+                width: 34px;
+                height: 34px;
+                top: 4px;
+                right: 4px;
+                outline: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .p-banner { min-height: 34px !important; }
+
+            .close-trigger svg {
+                width: 26px;
+                height: 26px;
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-trigger.animate-shrink svg {
+            animation: blowShrink var(--x-speed) cubic-bezier(0.2, 0.7, 0.1, 1) forwards !important;
+        }
+
+        @keyframes blowShrink {
+            0%   { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.7); opacity: 0; }
+        }
+
+        .sticky-banner.removing {
+            opacity: 0 !important;
+            pointer-events: none;
+            transition: opacity var(--banner-melt) ease-in-out !important;
+        }
+
+        .flick-up {
+            transform: translate3d(0, -65px, 0) !important;
+            transition: transform 0.2s ease-out !important;
+        }
+        .flick-down {
+            transform: translate3d(0, 50%, 0) !important;
+            transition: transform 0.2s ease-out !important;
+        }
+
+        .sticky-banner.in-footer {
+            opacity: 0;
+            transform: translateY(35px);
+            pointer-events: none;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+
+        .sticky-banner.returning {
+            opacity: 1;
+            transform: translateY(0);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* PRELOADER */
+
+        .ad-preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 200000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: calc(env(safe-area-inset-top, 0px) + 30px) 30px calc(env(safe-area-inset-bottom, 0px) + 30px) 30px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            pointer-events: none;
+            isolation: isolate;
+            outline: none;
+        }
+
+        .ad-preloader.visible {
+            opacity: 1;
+            display: flex !important;
+            pointer-events: auto;
+        }
+
+        /*
+         * Desktop: preloader hidden by default.
+         * html:not(.force-mobile) ensures the ?mobile override is NOT affected.
+         */
+        @media(min-width:1281px) {
+            html:not(.force-mobile) .ad-preloader { display: none !important; }
+        }
+
+        .ad-preloader-box {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden !important;
+            isolation: isolate;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .ad-preloader-box img,
+        .ad-preloader-box video {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            object-fit: contain;
+        }
+
+        .ad-preloader-box img.loaded,
+        .ad-preloader-box video.loaded { opacity: 1 !important; }
+
+        .ad-timer-wrap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            left: auto;
+            width: 34px;
+            height: 34px;
+            z-index: 10;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0 !important;
+            transform: none;
+            transition: none;
+        }
+
+        .ad-timer-wrap.is-centered {
+            top: 50% !important;
+            left: 50% !important;
+            right: auto !important;
+        }
+
+        .ad-timer-svg { transform: rotate(-90deg); width: 30px; height: 30px; }
+        .ad-timer-bg  { fill: none; stroke: #475569; stroke-width: 3; }
+
+        .ad-timer-bar {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-dasharray: 101;
+            stroke-dashoffset: 101;
+            will-change: stroke-dashoffset;
+        }
+
+        @-webkit-keyframes fillTimer {
+            from { stroke-dashoffset: 101; }
+            to   { stroke-dashoffset: 0; }
+        }
+
+        @keyframes fillTimer {
+            from { stroke-dashoffset: 101; }
+            to   { stroke-dashoffset: 0; }
+        }
+
+        @media (max-height: 600px) {
+            .ad-timer-wrap { width: 38px; height: 38px; top: 10px; right: 10px; }
+            .ad-timer-svg  { width: 34px; height: 34px; }
+        }
+
+        /* STATIC ADS INSURANCE */
+
+        .ad img, .ad iframe, .ad ins {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1280px) {
+            .ad.ad-article-top,
+            .ad.ad-article-bottom,
+            .ad.ad-leaderboard,
+            .ad.ad-sidebar {
+                width: 100%;
+                margin: 0 0 20px 0;
+                overflow: hidden;
+            }
+        }
+
+        @media (min-width: 1281px) {
+            .ad.ad-article-top,
+            .ad.ad-article-bottom {
+                width: 100%;
+                margin: 20px 0 40px 0;
+                overflow: hidden;
+            }
+
+            .ad.ad-sidebar {
+                width: 100%;
+                max-width: 336px;
+                margin: 20px 0;
+                overflow: hidden;
+            }
+        }
+
+        html.force-mobile .ad.ad-article-top,
+        html.force-mobile .ad.ad-article-bottom,
+        html.force-mobile .ad.ad-leaderboard,
+        html.force-mobile .ad.ad-sidebar {
+            width: 100%;
+            margin: 0 0 20px 0;
+            overflow: hidden;
+        }
+
+        /* PRELOADER IMAGE */
+        .ad-preloader .ad-preloader-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- PRELOADER RESET BUTTON -->
+<button id="preloader-reset-btn" onclick="resetPreloader()" title="Preloader-ის გადატვირთვა">
+    <span class="ico">🔄</span>
+    <span>RESET</span>
+    <span class="lbl">Preloader</span>
+</button>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header class="site-header">
+    <div class="header-top">
+        <a href="#" class="site-logo">
+            <span class="logo-box">N</span>Nova<span class="logo-suffix">Media</span>
+        </a>
+        <div class="header-actions">
+            <a href="#" class="hide-mobile">სიახლეები</a>
+            <a href="#" class="hide-mobile">ტექნოლოგია</a>
+            <a href="#" class="hide-mobile">სპორტი</a>
+            <a href="#" class="hide-mobile">გართობა</a>
+        </div>
+    </div>
+    <nav class="header-nav">
+        <ul>
+            <li class="active"><a href="#">მთავარი</a></li>
+            <li><a href="#">ეკონომიკა</a></li>
+            <li><a href="#">პოლიტიკა</a></li>
+            <li><a href="#">ტექნოლოგია</a></li>
+            <li><a href="#">მეცნიერება</a></li>
+            <li><a href="#">სპორტი</a></li>
+            <li><a href="#">კულტურა</a></li>
+            <li><a href="#">ჯანმრთელობა</a></li>
+        </ul>
+    </nav>
+</header>
+
+
+<!-- LEADERBOARD (Mobile Only) -->
+<div class="mobile-only">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+        <div class="ad-label-row">advertisement</div>
+        <div class="ad ad-leaderboard mobile" data-banner-wrapper>
+            <div style="background:linear-gradient(90deg,#d63031,#a52324);padding:14px 20px;text-align:center;color:white;display:flex;align-items:center;justify-content:center;gap:16px;height:130px;">
+                <strong style="font-size:14px;">📣 LEADERBOARD AD</strong>
+                <span style="font-size:11px;opacity:0.75;">Mobile Only — 130px</span>
+                <a href="#" style="background:rgba(255,255,255,0.2);color:white;padding:4px 14px;border-radius:4px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Visit ›</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     MAIN PAGE
+============================================================ -->
+<div class="page-wrapper">
+    <div class="content-grid">
+
+        <!-- ARTICLE COLUMN -->
+        <main class="article-main">
+
+            <!-- Article Top Desktop -->
+            <div class="desktop-only">
+                <div class="ad-label-row">advertisement</div>
+                <div class="ad ad-article-top" data-banner-wrapper>
+                    <div style="background:linear-gradient(90deg,#2d3436,#0984e3);height:100px;display:flex;align-items:center;gap:28px;border-radius:6px;padding:0 28px;">
+                        <div style="color:white;flex:1;">
+                            <div style="font-size:19px;font-weight:700;">Article Top Desktop Ad</div>
+                            <div style="font-size:12px;opacity:0.65;margin-top:3px;">970 × 100 — მხოლოდ დესკტოპზე</div>
+                        </div>
+                        <a href="#" style="background:#d63031;color:white;padding:11px 24px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Shop Now →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Top Mobile -->
+            <div class="mobile-only">
+                <div class="ad-label-row">advertisement</div>
+                <div class="ad ad-article-top" data-banner-wrapper>
+                    <div style="background:linear-gradient(90deg,#6c5ce7,#a29bfe);height:100px;display:flex;align-items:center;gap:14px;border-radius:6px;padding:0 16px;">
+                        <div style="color:white;flex:1;">
+                            <div style="font-size:14px;font-weight:700;">Article Top Mobile</div>
+                            <div style="font-size:11px;opacity:0.7;margin-top:2px;">320 × 80</div>
+                        </div>
+                        <a href="#" style="background:white;color:#6c5ce7;padding:8px 16px;border-radius:5px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">Tap Here</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARTICLE -->
+            <div style="margin: 32px 0 0;">
+                <div class="article-kicker">
+                    <span class="kicker-tag">Breaking</span>
+                    <span class="kicker-section">ტექნოლოგია</span>
+                </div>
+                <h1 class="article-title">ხელოვნური ინტელექტის მომავალი: რას გველის 2025 წელს და შემდეგ</h1>
+                <p class="article-deck">AI სისტემები სწრაფად ვითარდება. ექსპერტები განიხილავენ, თუ როგორ შეცვლის ეს ტექნოლოგია ჩვენი ცხოვრების ყველა სფეროს.</p>
+                <div class="article-meta">
+                    <div class="author-avatar">ნი</div>
+                    <div class="author-info">
+                        <div class="author-name">ნინო ბერიძე</div>
+                        <div class="article-date">27 თებერვალი, 2025 · 8 წუთი კითხვა</div>
+                    </div>
+                    <div class="article-share">
+                        <button class="share-btn">Share</button>
+                        <button class="share-btn">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="article-hero">
+                <span class="hero-label">Hero Image — 1200 × 525</span>
+            </div>
+
+            <div class="content-card">
+                <h2>შესავალი: AI-ის ახალი ეპოქა</h2>
+                <p>ბოლო რამდენიმე წელია, ხელოვნური ინტელექტი საუბრის მთავარ თემად იქცა. GPT-4-ის, Gemini-სა და Claude-ის მსგავსი სისტემები ათასობით ადამიანს ყოველდღიურ სამუშაოში ეხმარებიან — ტექსტის დაწერიდან კოდირებამდე, კვლევიდან შემოქმედებამდე.</p>
+                <p>მაგრამ ეს მხოლოდ დასაწყისია. 2025 წელს AI-ის განვითარება ახალ ეტაპზე გადადის: multimodal სისტემები, რომლებიც ტექსტს, სურათს, ხმასა და ვიდეოს ერთდროულად ამუშავებენ, სულ უფრო ხელმისაწვდომი ხდება ყველასთვის.</p>
+                <blockquote>
+                    <p>„ჩვენ ვართ AI ეპოქის სათავეში. ის, რასაც ახლა შეუძლებლად ვთვლით, ორი-სამი წელში ნორმა გახდება."</p>
+                    <cite>— პროფ. გიორგი კახიანი, AI კვლევის ინსტიტუტი</cite>
+                </blockquote>
+                <p>კომპანიები, სახელმწიფოები და სამეცნიერო დაწესებულებები კონკურენციაში ჩართულნი არიან — ყველა ცდილობს AI-ის შესაძლებლობები ყველაზე ეფექტურად გამოიყენოს.</p>
+            </div>
+
+            <div class="content-card">
+                <h2>სამუშაო ბაზარი: საფრთხე თუ შესაძლებლობა?</h2>
+                <div class="inline-image" style="background:linear-gradient(135deg,#00b894,#00cec9);">
+                    <span>Inline Image — ილუსტრაცია</span>
+                </div>
+                <p>McKinsey-ის ბოლო კვლევის თანახმად, AI-ავტომატიზაციამ შეიძლება 2030 წლამდე 375 მილიონი სამუშაო ადგილი ტრანსფორმირება გამოიწვიოს.</p>
+                <h3>რომელი პროფესიები ყველაზე მეტად შეიცვლება?</h3>
+                <p>ანალიტიკოსები, სტენოგრაფები, მონაცემთა შეყვანის ოპერატორები — ეს პოზიციები ყველაზე მეტ ავტომატიზაციას ექვემდებარება. ექიმები, მასწავლებლები, ფსიქოლოგები — ნაკლებ რისკს ექვემდებარებიან.</p>
+            </div>
+
+            <div class="content-card">
+                <h2>ჯანდაცვა: AI-ს ყველაზე სასიკეთო გამოყენება</h2>
+                <p>სამედიცინო სფეროში AI-ს გამოყენება განსაკუთრებით სასარგებლოა. DeepMind-ის AlphaFold-მა ცილოვანი სტრუქტურების პრობლემა გადაჭრა — ეს 50-წლიანი გამოწვევა იყო, რომელიც ათეულობით ახალი მედიკამენტის შექმნას გახდის შესაძლებელს.</p>
+                <div class="inline-image" style="background:linear-gradient(135deg,#e17055,#d63031);">
+                    <span>ინფოგრაფიკა: AI ჯანდაცვაში</span>
+                </div>
+                <p>ქართულ კლინიკებშიც ნელ-ნელა იწყება AI-ს დანერგვა. სასტარტო შედეგები 23%-ით გაუმჯობესებულ დიაგნოსტიკაზე მიუთითებს.</p>
+            </div>
+
+            <div class="content-card">
+                <h2>განათლება: სასწავლო პროცესის ახალი სახე</h2>
+                <p>AI tutors-ები ერთ-ერთი ყველაზე სწრაფად მზარდი სეგმენტია. Khan Academy-ს Khanmigo, Duolingo-ს AI სისტემა — ყველა ეს ხელსაწყო ადაპტიური სწავლების პრინციპს ეყრდნობა.</p>
+                <blockquote>
+                    <p>„პრობლემა ChatGPT-ით ნაწერი esé-ები კი არ არის — პრობლემა ის არის, რომ სასწავლო პროცესი იცვლება."</p>
+                    <cite>— სალომე ჩხვიმიანი, განათლების მკვლევარი</cite>
+                </blockquote>
+                <p>საქართველოს განათლების სამინისტრო 2025 წლიდან AI-ლიტერატობის სპეციალურ სასკოლო პროგრამას გეგმავს.</p>
+            </div>
+
+            <div class="content-card">
+                <h2>ეთიკა და რეგულაციები</h2>
+                <p>ევროკავშირის AI Act — მსოფლიოს პირველი ყოვლისმომცველი AI-ს სამართლებრივი ჩარჩო — 2024 წელს ამოქმედდა. „მაღალი რისკის" სისტემებს მკაცრი მოთხოვნები ეკისრებათ.</p>
+                <p>Deep fake ვიდეოების, AI-გენერირებული dezinformación-ის და algorithmic bias-ის პრობლემები კვლავ აქტუალურია.</p>
+                <div class="tags-row">
+                    <span class="tag">ხელოვნური ინტელექტი</span>
+                    <span class="tag">ტექნოლოგია</span>
+                    <span class="tag">OpenAI</span>
+                    <span class="tag">ეთიკა</span>
+                    <span class="tag">EU AI Act</span>
+                    <span class="tag">machine learning</span>
+                    <span class="tag">ჯანდაცვა</span>
+                    <span class="tag">განათლება</span>
+                </div>
+            </div>
+
+            <!-- Article Bottom Desktop -->
+            <div class="desktop-only">
+                <div class="ad-label-row">advertisement</div>
+                <div class="ad ad-article-bottom" data-banner-wrapper>
+                    <div style="background:linear-gradient(90deg,#2d3436,#00b894);height:100px;display:flex;align-items:center;gap:28px;border-radius:6px;padding:0 28px;">
+                        <div style="color:white;flex:1;">
+                            <div style="font-size:19px;font-weight:700;">Article Bottom Desktop Ad</div>
+                            <div style="font-size:12px;opacity:0.65;margin-top:3px;">970 × 100 — სტატიის ბოლო</div>
+                        </div>
+                        <a href="#" style="background:white;color:#00b894;padding:11px 24px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Learn More →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article Bottom Mobile -->
+            <div class="mobile-only">
+                <div class="ad-label-row">advertisement</div>
+                <div class="ad ad-article-bottom" data-banner-wrapper>
+                    <div style="background:linear-gradient(90deg,#e17055,#d63031);height:100px;display:flex;align-items:center;gap:14px;border-radius:6px;padding:0 16px;">
+                        <div style="color:white;flex:1;">
+                            <div style="font-size:14px;font-weight:700;">Article Bottom Mobile</div>
+                            <div style="font-size:11px;opacity:0.7;margin-top:2px;">320 × 80</div>
+                        </div>
+                        <a href="#" style="background:white;color:#d63031;padding:8px 16px;border-radius:5px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">View Deal</a>
+                    </div>
+                </div>
+            </div>
+
+        </main><!-- /article-main -->
+
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">advertisement</div>
+                <div class="ad-sidebar-wrapper">
+                    <div class="ad ad-sidebar" data-banner-wrapper>
+                        <div style="background:linear-gradient(160deg,#0984e3,#6c5ce7);border-radius:8px;padding:24px 20px;text-align:center;color:white;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:10px;">Sidebar Ad #1</div>
+                            <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Try Premium</div>
+                            <div style="font-size:12px;opacity:0.8;margin-bottom:18px;">Unlimited access. Cancel anytime.</div>
+                            <a href="#" style="background:white;color:#0984e3;display:block;padding:11px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;">Start Free Trial →</a>
+                            <div style="font-size:10px;opacity:0.5;margin-top:10px;">336 × 280</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">სხვა სტატიები</div>
+                <div class="related-card">
+                    <div class="related-thumb" style="background:linear-gradient(135deg,#fd79a8,#e84393);">🤖</div>
+                    <div class="related-text"><h4>ChatGPT vs Claude: შედარება 2025</h4><span>4 წუთი კითხვა</span></div>
+                </div>
+                <div class="related-card">
+                    <div class="related-thumb" style="background:linear-gradient(135deg,#00cec9,#0984e3);">💻</div>
+                    <div class="related-text"><h4>კოდირება AI-ის დახმარებით</h4><span>7 წუთი კითხვა</span></div>
+                </div>
+                <div class="related-card">
+                    <div class="related-thumb" style="background:linear-gradient(135deg,#55efc4,#00b894);">🧬</div>
+                    <div class="related-text"><h4>AI და ბიოტექნოლოგია</h4><span>5 წუთი კითხვა</span></div>
+                </div>
+            </div>
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">advertisement</div>
+                <div class="ad-sidebar-wrapper">
+                    <div class="ad ad-sidebar" data-banner-wrapper>
+                        <div style="background:linear-gradient(160deg,#d63031,#e17055);border-radius:8px;padding:24px 20px;text-align:center;color:white;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:10px;">Sidebar Ad #2</div>
+                            <div style="font-size:22px;margin-bottom:6px;">🔥</div>
+                            <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Flash Sale</div>
+                            <div style="font-size:12px;opacity:0.85;margin-bottom:18px;">50% off electronics. Today only!</div>
+                            <a href="#" style="background:white;color:#d63031;display:block;padding:11px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;">Shop Now →</a>
+                            <div style="font-size:10px;opacity:0.5;margin-top:10px;">336 × 250</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">advertisement</div>
+                <div class="ad-sidebar-wrapper">
+                    <div class="ad ad-sidebar" data-banner-wrapper>
+                        <div style="background:linear-gradient(160deg,#2d3436,#636e72);border-radius:8px;padding:24px 20px;text-align:center;color:white;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:10px;">Sidebar Ad #3</div>
+                            <div style="font-size:22px;margin-bottom:6px;">📱</div>
+                            <div style="font-size:17px;font-weight:700;margin-bottom:8px;">New iPhone 16</div>
+                            <div style="font-size:12px;opacity:0.75;margin-bottom:18px;">The most powerful iPhone ever made.</div>
+                            <a href="#" style="background:#0984e3;color:white;display:block;padding:11px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;">Order Now →</a>
+                            <div style="font-size:10px;opacity:0.5;margin-top:10px;">336 × 250</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">advertisement</div>
+                <div class="ad-sidebar-wrapper">
+                    <div class="ad ad-sidebar" data-banner-wrapper>
+                        <div style="background:linear-gradient(160deg,#6c5ce7,#a29bfe);border-radius:8px;padding:24px 20px;text-align:center;color:white;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:10px;">Sidebar Ad #4</div>
+                            <div style="font-size:22px;margin-bottom:6px;">🎓</div>
+                            <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Online Courses</div>
+                            <div style="font-size:12px;opacity:0.8;margin-bottom:18px;">Learn AI & ML from experts.</div>
+                            <a href="#" style="background:white;color:#6c5ce7;display:block;padding:11px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;">Enroll Free →</a>
+                            <div style="font-size:10px;opacity:0.5;margin-top:10px;">336 × 250</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-block">
+                <div class="sidebar-heading">advertisement</div>
+                <div class="ad-sidebar-wrapper">
+                    <div class="ad ad-sidebar" data-banner-wrapper>
+                        <div style="background:linear-gradient(160deg,#00b894,#00cec9);border-radius:8px;padding:24px 20px;text-align:center;color:white;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:0.7;margin-bottom:10px;">Sidebar Ad #5</div>
+                            <div style="font-size:22px;margin-bottom:6px;">🌿</div>
+                            <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Go Green</div>
+                            <div style="font-size:12px;opacity:0.8;margin-bottom:18px;">Eco-friendly products for a better tomorrow.</div>
+                            <a href="#" style="background:white;color:#00b894;display:block;padding:11px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;">Explore →</a>
+                            <div style="font-size:10px;opacity:0.5;margin-top:10px;">336 × 250</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </div><!-- /content-grid -->
+</div><!-- /page-wrapper -->
+
+
+<!-- FOOTER -->
+<footer id="footer">
+    <div class="footer-logo">NovaMedia</div>
+    <div class="footer-copy">© 2025 NovaMedia · ad-component test page</div>
+</footer>
+
+
+<!-- ============================================================
+     SECTION 3 — STICKIES (ზუსტი კოდი)
+============================================================ -->
+<div id="banner-wrapper-desktop" class="sticky-banner desktop-only" data-sticky-type="desktop">
+    <div class="p-banner">
+        <button class="close-trigger" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div class="banner-content"></div>
+    </div>
+</div>
+
+<div id="banner-wrapper-mobile" class="sticky-banner mobile-only" data-sticky-type="mobile">
+    <div class="p-banner">
+        <button class="close-trigger" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div class="banner-content"></div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     SECTION 4 — PRELOADERS (ზუსტი სტრუქტურა)
+============================================================ -->
+
+<!-- Preloader #1 -->
+<div class="ad-preloader js-preloader"
+     id="p-view-0"
+     data-ad-id="preloader-1"
+     data-index="0"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true"
+     tabindex="-1"
+     aria-label="Advertisement"
+     style="display:none">
+    <div class="ad-preloader-box">
+        <div class="ad-timer-wrap" aria-hidden="true">
+            <svg class="ad-timer-svg" viewBox="0 0 36 36">
+                <circle class="ad-timer-bg" cx="18" cy="18" r="16" fill="none"></circle>
+                <circle class="ad-timer-bar" cx="18" cy="18" r="16" fill="none"></circle>
+            </svg>
+        </div>
+        <a href="#" target="_blank" rel="nofollow sponsored noopener noreferrer">
+            <picture>
+                <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27640%27%20height%3D%27960%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g1%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238B5CF6%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%234C1D95%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%27640%27%20height%3D%27960%27%20fill%3D%27url%28%23g1%29%27%2F%3E%3Crect%20x%3D%2730%27%20y%3D%2730%27%20width%3D%27580%27%20height%3D%27900%27%20rx%3D%2716%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.07%29%27%2F%3E%3Ctext%20x%3D%27320%27%20y%3D%27340%27%20text-anchor%3D%27middle%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.5%29%27%20font-family%3D%27Arial%27%20font-size%3D%2780%27%3E%F0%9F%9A%80%3C%2Ftext%3E%3Ctext%20x%3D%27320%27%20y%3D%27470%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%27%20font-size%3D%2736%27%20font-weight%3D%27bold%27%3EPRELOADER%20AD%20%231%3C%2Ftext%3E%3Ctext%20x%3D%27320%27%20y%3D%27520%27%20text-anchor%3D%27middle%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.65%29%27%20font-family%3D%27Arial%27%20font-size%3D%2720%27%3E640%20x%20960%20-%20Mobile%20Full%20Screen%3C%2Ftext%3E%3Crect%20x%3D%27180%27%20y%3D%27660%27%20width%3D%27280%27%20height%3D%2770%27%20rx%3D%2712%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.2%29%27%2F%3E%3Ctext%20x%3D%27320%27%20y%3D%27703%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27Arial%27%20font-size%3D%2722%27%20font-weight%3D%27bold%27%3ETap%20to%20Visit%3C%2Ftext%3E%3Ctext%20x%3D%27320%27%20y%3D%27870%27%20text-anchor%3D%27middle%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.3%29%27%20font-family%3D%27Arial%27%20font-size%3D%2718%27%3Eauto-closes%20in%205s%3C%2Ftext%3E%3C%2Fsvg%3E"
+                     class="js-ad-image"
+                     alt="Advertisement"
+                     loading="eager">
+            </picture>
+        </a>
+    </div>
+</div>
+
+<!-- Preloader #2 -->
+<div class="ad-preloader js-preloader"
+     id="p-view-1"
+     data-ad-id="preloader-2"
+     data-index="1"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true"
+     tabindex="-1"
+     aria-label="Advertisement"
+     style="display:none">
+    <div class="ad-preloader-box">
+        <div class="ad-timer-wrap" aria-hidden="true">
+            <svg class="ad-timer-svg" viewBox="0 0 36 36">
+                <circle class="ad-timer-bg" cx="18" cy="18" r="16" fill="none"></circle>
+                <circle class="ad-timer-bar" cx="18" cy="18" r="16" fill="none"></circle>
+            </svg>
+        </div>
+        <a href="#" target="_blank" rel="nofollow sponsored noopener noreferrer">
+            <picture>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='480'%3E%3Cdefs%3E%3ClinearGradient id='g2' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23EC4899'/%3E%3Cstop offset='1' stop-color='%239D174D'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='320' height='480' fill='url(%23g2)'/%3E%3Crect x='20' y='20' width='280' height='440' rx='12' fill='rgba(255,255,255,0.07)'/%3E%3Ctext x='160' y='170' text-anchor='middle' fill='rgba(255,255,255,0.5)' font-family='Arial' font-size='52'%3E%F0%9F%8E%AF%3C/text%3E%3Ctext x='160' y='240' text-anchor='middle' fill='white' font-family='Arial' font-size='22' font-weight='bold'%3EPRELOADER AD %232%3C/text%3E%3Ctext x='160' y='272' text-anchor='middle' fill='rgba(255,255,255,0.65)' font-family='Arial' font-size='13'%3E320x480 - Mobile Full Screen%3C/text%3E%3Crect x='80' y='340' width='160' height='46' rx='8' fill='rgba(255,255,255,0.2)'/%3E%3Ctext x='160' y='369' text-anchor='middle' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EShop Now%3C/text%3E%3Ctext x='160' y='440' text-anchor='middle' fill='rgba(255,255,255,0.3)' font-family='Arial' font-size='11'%3Eauto-closes in 5s%3C/text%3E%3C/svg%3E"
+                     class="js-ad-image"
+                     alt="Advertisement"
+                     loading="eager">
+            </picture>
+        </a>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     SECTION 6 — JAVASCRIPT (ზუსტი კოდი + hardcoded test data)
+============================================================ -->
+<script>
+
+function resetPreloader() {
+    localStorage.removeItem('p_last_time');
+    location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- RESET BLOCK ---
+
+    const resetSticky = (id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = 'none';
+            el.classList.remove('visible', 'in-footer', 'returning', 'removing');
+            delete el.dataset.initialized;
+        }
+    };
+    resetSticky('banner-wrapper-desktop');
+    resetSticky('banner-wrapper-mobile');
+
+    const TIMING = {
+        STICKY_SHOW_DELAY:    3000,
+        PRELOADER_AUTO_CLOSE: 5000,
+        MOBILE_SAFETY_LIMIT:  10000,
+        FLICK_DURATION:       700,
+        FLICK_FAST:           500,
+        GESTURE_LOCK:         800,
+    };
+
+    const isDev       = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+    const forceMobile = new URLSearchParams(window.location.search).has('mobile');
+
+    const trackImpression = window.trackImpression || (isDev ? (t, i) => console.log(`Impression: ${t} #${i}`) : () => {});
+    const trackClick      = window.trackClick      || (isDev ? (t, i) => console.log(`Click: ${t} #${i}`)      : () => {});
+
+    const footer = document.getElementById('footer') || document.querySelector('footer');
+
+    const initSticky = (wrapperId, stickyData) => {
+        const bannerWrapper = document.getElementById(wrapperId);
+        if (!bannerWrapper) return;
+
+        if (bannerWrapper.dataset.initialized) return;
+        bannerWrapper.dataset.initialized = 'true';
+
+        const contentContainer = bannerWrapper.querySelector('.banner-content');
+        const banner           = bannerWrapper.querySelector('.p-banner');
+        const closeBtn         = bannerWrapper.querySelector('.close-trigger');
+
+        if (!contentContainer || !banner || !closeBtn || !stickyData || stickyData.length === 0) return;
+
+        let s = null;
+
+        try {
+            let idx = sessionStorage.getItem('sticky-last-' + wrapperId);
+            const lastIdx = parseInt(idx, 10);
+            idx = !isNaN(lastIdx)
+                ? (lastIdx + 1) % stickyData.length
+                : Math.floor(Math.random() * stickyData.length);
+
+            sessionStorage.setItem('sticky-last-' + wrapperId, idx);
+
+            s = stickyData[idx];
+            if (!s || (!s.code && !s.image && !s.image_mobile)) return;
+
+            const isMobile = forceMobile || window.innerWidth <= 1280;
+
+            if (s.code) {
+                contentContainer.innerHTML = s.code;
+            } else {
+                const img = isMobile ? (s.image_mobile || s.image) : s.image;
+                if (!img) return;
+
+                const rawLink  = isMobile ? (s.url_mobile || s.url || '#') : (s.url || '#');
+                const safeLink = /^https?:\/\//i.test(rawLink) ? rawLink : '#';
+
+                contentContainer.innerHTML = `
+                    <a href="${safeLink}" target="_blank" rel="nofollow sponsored" style="display:block; width:100%;">
+                        <img src="${img}" alt="Ad" style="display:block;">
+                    </a>`;
+            }
+
+        } catch (e) {
+            console.error('Sticky content error:', e);
+            return;
+        }
+
+        let shown         = false;
+        let isClosing     = false;
+        let isMoving      = false;
+        let flickDisabled = false;
+        let gestureLocked = false;
+        let footerObserver = null;
+        let lastScrollY   = window.scrollY;
+        let activeFlickId = 0;
+
+        const pageLoadTime = Date.now();
+
+        const showNow = () => {
+            if (shown || isClosing) return;
+            shown = true;
+            window.removeEventListener('scroll', onScroll);
+            bannerWrapper.style.display = 'flex';
+            trackImpression(bannerWrapper.dataset.stickyType, s.id);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                bannerWrapper.classList.add('visible');
+            }));
+        };
+
+        const onScroll = () => {
+            if (Date.now() - pageLoadTime < 1000) return;
+            const currentY         = window.scrollY;
+            const scrollDifference = Math.abs(currentY - lastScrollY);
+            if (currentY > 100 && scrollDifference > 30) {
+                showNow();
+            }
+            lastScrollY = currentY;
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        const autoShowTimer = setTimeout(() => {
+            showNow();
+        }, TIMING.STICKY_SHOW_DELAY);
+
+        if (footer) {
+            footerObserver = new IntersectionObserver(entries => {
+                if (entries[0].isIntersecting) {
+                    bannerWrapper.classList.add('in-footer');
+                    bannerWrapper.classList.remove('returning');
+                } else {
+                    bannerWrapper.classList.remove('in-footer');
+                    bannerWrapper.classList.add('returning');
+                    setTimeout(() => {
+                        if (bannerWrapper) bannerWrapper.classList.remove('returning');
+                    }, 300);
+                }
+            }, { threshold: 0.1 });
+            footerObserver.observe(footer);
+        }
+
+        const runFlick = (cls, delay) => {
+            if (isMoving || flickDisabled || isClosing || !shown) return;
+            isMoving = true;
+            banner.classList.add(cls);
+
+            if (forceMobile || window.innerWidth <= 1280) {
+                isMoving = false;
+                const flickId = ++activeFlickId;
+
+                let scrollStopTimer = null;
+
+                function forceReset() {
+                    if (flickId !== activeFlickId) return;
+                    clearTimeout(scrollStopTimer);
+                    window.removeEventListener('scroll', onScrollTick);
+                    banner.classList.remove('flick-up', 'flick-down');
+                    isMoving = false;
+                }
+
+                function onScrollTick() {
+                    const st        = window.pageYOffset || document.documentElement.scrollTop;
+                    const isFlickUp   = banner.classList.contains('flick-up');
+                    const isFlickDown = banner.classList.contains('flick-down');
+
+                    if ((isFlickUp && st < lastScrollTop - 50) || (isFlickDown && st > lastScrollTop + 50)) {
+                        lastScrollTop = st;
+                        banner.classList.remove('flick-up', 'flick-down');
+                        if (isFlickUp) banner.classList.add('flick-down');
+                        else           banner.classList.add('flick-up');
+                        clearTimeout(scrollStopTimer);
+                        scrollStopTimer = setTimeout(forceReset, 250);
+                        return;
+                    }
+
+                    lastScrollTop = st <= 0 ? 0 : st;
+                    clearTimeout(scrollStopTimer);
+                    scrollStopTimer = setTimeout(forceReset, 250);
+                }
+
+                setTimeout(() => {
+                    lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    window.addEventListener('scroll', onScrollTick, { passive: true });
+                }, 300);
+                scrollStopTimer = setTimeout(forceReset, 800);
+
+            } else {
+                setTimeout(() => {
+                    banner.classList.remove(cls);
+                    setTimeout(() => { isMoving = false; }, 100);
+                }, delay || 500);
+            }
+        };
+
+        const onWheel = e => {
+            if (bannerWrapper && bannerWrapper.contains(e.target)) return;
+            if (gestureLocked || isClosing || !shown || isMoving) return;
+            if (Math.abs(e.deltaY) > 200) {
+                gestureLocked = true;
+                runFlick(e.deltaY > 0 ? 'flick-down' : 'flick-up', TIMING.FLICK_FAST);
+                setTimeout(() => gestureLocked = false, TIMING.GESTURE_LOCK);
+            }
+        };
+
+        let touchStartY = 0, touchStartTime = 0;
+        let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        const onTouchStart = e => {
+            touchStartY    = e.touches[0].pageY;
+            touchStartTime = performance.now();
+        };
+
+        const onTouchEnd = e => {
+            if (gestureLocked || isClosing || !shown || isMoving) return;
+            const diff     = e.changedTouches[0].pageY - touchStartY;
+            const velocity = Math.abs(diff) / (performance.now() - touchStartTime || 1);
+            if (velocity > 0.2 && Math.abs(diff) > 30) {
+                gestureLocked = true;
+                runFlick(diff < 0 ? 'flick-up' : 'flick-down');
+                setTimeout(() => gestureLocked = false, TIMING.GESTURE_LOCK);
+            }
+        };
+
+        window.addEventListener('wheel',      onWheel,      { passive: true });
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchend',   onTouchEnd,   { passive: true });
+
+        // Close Logic
+        const closeBanner = e => {
+            if (e) e.preventDefault();
+            if (isClosing) return;
+            activeFlickId++;
+            isClosing     = true;
+            flickDisabled = true;
+            trackClick(bannerWrapper.dataset.stickyType, s.id);
+
+            window.removeEventListener('scroll',     onScroll);
+            window.removeEventListener('wheel',      onWheel);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchend',   onTouchEnd);
+            clearTimeout(autoShowTimer);
+
+            if (footerObserver) {
+                footerObserver.disconnect();
+                footerObserver = null;
+            }
+
+            const rootStyles = getComputedStyle(document.documentElement);
+            const startDelay = (parseFloat(rootStyles.getPropertyValue('--start-delay')) || 0) * 1000;
+            const meltTime   = (parseFloat(rootStyles.getPropertyValue('--banner-melt'))  || 0.8) * 1000;
+
+            closeBtn.classList.add('animate-shrink');
+
+            setTimeout(() => {
+                if (bannerWrapper) {
+                    bannerWrapper.classList.add('removing');
+                    setTimeout(() => {
+                        if (bannerWrapper && bannerWrapper.parentNode) bannerWrapper.remove();
+                    }, meltTime + 100);
+                }
+            }, startDelay);
+        };
+
+        closeBtn.addEventListener('click', closeBanner);
+        bannerWrapper.addEventListener('cleanup-event', () => closeBanner());
+    };
+
+
+    // ---- Decision Logic ----
+
+    const isDesktop = forceMobile ? false : window.innerWidth >= 1281;
+
+    if (isDesktop) {
+        const desktopStickies = [
+            {
+                status: true,
+                id: 'desk-sticky-1',
+                code: '<div style="background:linear-gradient(90deg,#1a1a2e,#0f3460);padding:14px 60px 14px 24px;display:flex;align-items:center;justify-content:center;gap:24px;"><div style="color:white;"><strong style="font-size:16px;">🎯 Desktop Sticky Ad #1</strong>&nbsp;&nbsp;<span style="font-size:12px;opacity:0.65;">— Special summer offer, limited time</span></div><a href="#" style="background:#d63031;color:white;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0;">Shop Now</a></div>'
+            },
+            {
+                status: true,
+                id: 'desk-sticky-2',
+                code: '<div style="background:linear-gradient(90deg,#533483,#4a0e8f);padding:14px 60px 14px 24px;display:flex;align-items:center;justify-content:center;gap:24px;"><div style="color:white;"><strong style="font-size:16px;">🚀 Desktop Sticky Ad #2</strong>&nbsp;&nbsp;<span style="font-size:12px;opacity:0.65;">— Get 50% off on all premium plans</span></div><a href="#" style="background:#2ecc71;color:white;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0;">Get Offer</a></div>'
+            }
+        ];
+
+        if (desktopStickies.length > 0) {
+            initSticky('banner-wrapper-desktop', desktopStickies);
+        }
+
+    } else {
+        const mobileStickies = [
+            {
+                status: true,
+                id: 'mob-sticky-1',
+                code: '<div style="background:linear-gradient(90deg,#c0392b,#e74c3c);padding:12px 50px 12px 16px;display:flex;align-items:center;gap:14px;"><div style="color:white;flex:1;"><strong style="font-size:14px;">📱 Mobile Sticky Ad #1</strong><br><span style="font-size:11px;opacity:0.8;">Limited offer — tap to see deal</span></div><a href="#" style="background:white;color:#c0392b;padding:8px 14px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;">Tap Here</a></div>'
+            },
+            {
+                status: true,
+                id: 'mob-sticky-2',
+                code: '<div style="background:linear-gradient(90deg,#0984e3,#74b9ff);padding:12px 50px 12px 16px;display:flex;align-items:center;gap:14px;"><div style="color:white;flex:1;"><strong style="font-size:14px;">📱 Mobile Sticky Ad #2</strong><br><span style="font-size:11px;opacity:0.8;">New arrivals — 30% off today</span></div><a href="#" style="background:white;color:#0984e3;padding:8px 14px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;">View Deal</a></div>'
+            }
+        ];
+
+        let stickyStarted = false;
+        const startStickyMobile = () => {
+            if (stickyStarted || mobileStickies.length === 0) return;
+            stickyStarted = true;
+            clearTimeout(safetyTimer);
+            initSticky('banner-wrapper-mobile', mobileStickies);
+        };
+
+        let safetyTimer = setTimeout(startStickyMobile, TIMING.MOBILE_SAFETY_LIMIT);
+        window.addEventListener('preloaderClosed', startStickyMobile, { once: true });
+    }
+
+
+    // ---- PRELOADER LOGIC ----
+
+    const preloaders = [...document.querySelectorAll('.js-preloader')];
+
+    if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
+        const now        = Date.now();
+        const lastShown  = parseInt(localStorage.getItem('p_last_time') || '0', 10);
+        const COOLDOWN   = 45000;
+        const isFirstVisit   = lastShown === 0;
+        const cooldownPassed = (now - lastShown >= COOLDOWN);
+
+        if (isFirstVisit || (cooldownPassed && Math.random() > 0.3)) {
+            const idx        = Math.floor(Math.random() * preloaders.length);
+            const el         = preloaders[idx];
+            const img        = el.querySelector('.js-ad-image');
+            const isExternal = el.querySelector('.ad-external-video-wrapper');
+
+            if (el) {
+                const tBar = el.querySelector('.ad-timer-bar');
+                el.setAttribute('aria-hidden', 'false');
+                el.classList.add('visible');
+                el.focus();
+
+                const hideP = (elem) => {
+                    if (!elem || !elem.classList.contains('visible')) return;
+                    localStorage.setItem('p_last_time', Date.now().toString());
+                    window.dispatchEvent(new CustomEvent('preloaderClosed'));
+                    elem.classList.remove('visible');
+                };
+
+                if (tBar) {
+                    tBar.style.webkitAnimation = 'none';
+                    tBar.style.animation       = 'none';
+                    tBar.style.strokeDashoffset = '101';
+                    const duration  = TIMING.PRELOADER_AUTO_CLOSE;
+                    const startTime = performance.now();
+
+                    function animate(currentTime) {
+                        const elapsed  = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        tBar.style.strokeDashoffset = 101 - (progress * 101);
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            hideP(el);
+                        }
+                    }
+
+                    requestAnimationFrame(animate);
+                }
+
+                if (img) {
+                    img.onerror = () => { img.style.display = 'none'; };
+                    img.onload  = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
+                    if (img.complete) img.onload();
+                }
+
+                if (isExternal) {
+                    window.addEventListener('externalAdStarted', () => hideP(el), { once: true });
+                }
+
+                const realAdId = el.dataset.adId || el.id;
+                if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
+                el.querySelector('a')?.addEventListener('click', () => {
+                    if (typeof trackClick === 'function') trackClick('preloader', realAdId);
+                });
+            }
+        } else {
+            window.dispatchEvent(new CustomEvent('preloaderClosed'));
+        }
+    } else {
+        window.dispatchEvent(new CustomEvent('preloaderClosed'));
+    }
+
+
+    // ---- BANNER CLEANUP ----
+
+    setTimeout(() => {
+        const targets = document.querySelectorAll('[data-banner-wrapper], .ad-preloader');
+
+        targets.forEach(el => {
+            const rootTags = ['BODY', 'HTML', 'HEAD', 'MAIN', 'HEADER', 'FOOTER'];
+            if (rootTags.includes(el.tagName)) return;
+
+            const cleanupIfBroken = () => {
+                const imgs = Array.from(el.querySelectorAll('img'));
+                const hasPotentialImg = imgs.some(img => {
+                    const isLoadedSuccessfully = img.complete && img.naturalHeight > 2;
+                    const isStillLoading       = !img.complete;
+                    return isLoadedSuccessfully || isStillLoading;
+                });
+
+                const hasIframe = !!el.querySelector('iframe');
+                const hasVideo  = !!el.querySelector('video');
+                const hasIns    = !!el.querySelector('ins');
+                const hasText   = el.textContent.trim().length > 20;
+
+                if (hasPotentialImg || hasIframe || hasVideo || hasIns || hasText) return;
+
+                el.dispatchEvent(new CustomEvent('cleanup-event'));
+                if (el.parentNode) {
+                    if (typeof isDev !== 'undefined' && isDev) {
+                        console.warn('Ad block cleanup: empty or broken content removed.', el);
+                    }
+                    el.remove();
+                }
+            };
+
+            const media = el.querySelectorAll('img, iframe, video');
+
+            if (media.length > 0) {
+                let pending = media.length;
+                const checkMedia = () => {
+                    pending--;
+                    if (pending <= 0) cleanupIfBroken();
+                };
+
+                media.forEach(item => {
+                    if (item.tagName === 'IMG') {
+                        if (item.complete) checkMedia();
+                        else {
+                            item.addEventListener('load',  checkMedia, { once: true });
+                            item.addEventListener('error', checkMedia, { once: true });
+                        }
+                    } else {
+                        checkMedia();
+                    }
+                });
+            } else {
+                cleanupIfBroken();
+            }
+        });
+
+    }, 17000);
+
+});
+</script>
+
+</body>
+</html>
