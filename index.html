@@ -1610,12 +1610,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.focus();
 
                 function syncPreloader() {
-               const vv = window.visualViewport;
-            if (!vv) return;
-               el.style.transform = `translateY(${vv.offsetTop}px)`;
-               el.style.height = vv.height + 'px';
-            }
-
+    const vv = window.visualViewport;
+    if (!vv) return;
+    requestAnimationFrame(() => {
+        el.style.transform = `translateY(${vv.offsetTop}px)`;
+        el.style.height = vv.height + 'px';
+    });
+}
                if (window.visualViewport) {
             window.visualViewport.addEventListener('scroll', syncPreloader);
             window.visualViewport.addEventListener('resize', syncPreloader);
@@ -1740,6 +1741,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
