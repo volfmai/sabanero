@@ -709,8 +709,7 @@
             pointer-events: none;
             isolation: isolate;
             outline: none;
-            will-change: transform;
-            -webkit-overflow-scrolling: touch;
+            will-change: top, height;
         }
 
         .ad-preloader.visible {
@@ -1604,41 +1603,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const img        = el.querySelector('.js-ad-image');
             const isExternal = el.querySelector('.ad-external-video-wrapper');
 
-            if (el) {
-                const tBar = el.querySelector('.ad-timer-bar');
-                el.setAttribute('aria-hidden', 'false');
-                const vv = window.visualViewport;
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const yPos = vv ? (scrollTop + vv.offsetTop) : scrollTop;
-                el.style.transform = `translateY(${yPos}px)`;
-                if (vv) el.style.height = vv.height + 'px';
-                el.classList.add('visible');
-                el.focus();
-                
-function syncPreloader() {
-    const _vv = window.visualViewport;
-  if (!el) return;
-    requestAnimationFrame(() => {
-        el.style.top = _vv.offsetTop + 'px';
-        el.style.height = _vv.height + 'px';
-    });
-}
-         
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('scroll', syncPreloader);
-    window.visualViewport.addEventListener('resize', syncPreloader);
-    syncPreloader();
-}          
-const hideP = (elem) => {
-    if (!elem || !elem.classList.contains('visible')) return;
-    window.removeEventListener('scroll', syncPreloader);
-    window.visualViewport?.removeEventListener('scroll', syncPreloader);
-    window.visualViewport?.removeEventListener('resize', syncPreloader);
+if (el) {
+    const tBar = el.querySelector('.ad-timer-bar');
+    el.setAttribute('aria-hidden', 'false');
     
-    localStorage.setItem('p_last_time', Date.now().toString());
-    window.dispatchEvent(new CustomEvent('preloaderClosed'));
-    elem.classList.remove('visible');
-};
+    function syncPreloader() {
+        const _vv = window.visualViewport;
+        if (!el || !_vv) return;
+        requestAnimationFrame(() => {
+            el.style.top = _vv.offsetTop + 'px';
+            el.style.height = _vv.height + 'px';
+        });
+    }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('scroll', syncPreloader);
+        window.visualViewport.addEventListener('resize', syncPreloader);
+        syncPreloader();
+    }
+
+    el.classList.add('visible');
+    el.focus();
+
+    const hideP = (elem) => {
+        if (!elem || !elem.classList.contains('visible')) return;
+        window.visualViewport?.removeEventListener('scroll', syncPreloader);
+        window.visualViewport?.removeEventListener('resize', syncPreloader);
+        
+        localStorage.setItem('p_last_time', Date.now().toString());
+        window.dispatchEvent(new CustomEvent('preloaderClosed'));
+        elem.classList.remove('visible');
+    };
+  
                 if (tBar) {
                     tBar.style.webkitAnimation = 'none';
                     tBar.style.animation       = 'none';
@@ -1748,6 +1744,7 @@ const hideP = (elem) => {
 
 </body>
 </html>
+
 
 
 
