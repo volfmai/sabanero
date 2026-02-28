@@ -1471,7 +1471,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => gestureLocked = false, TIMING.GESTURE_LOCK);
             }
         };
-
+        
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
         let touchStartY = 0, touchStartTime = 0;
         let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
@@ -1725,5 +1726,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
