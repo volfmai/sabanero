@@ -1586,6 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- PRELOADER LOGIC ----
 
+
 const preloaders = [...document.querySelectorAll('.js-preloader')];
 
 if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
@@ -1614,7 +1615,8 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
                 if (rafId) cancelAnimationFrame(rafId);
                 rafId = requestAnimationFrame(() => {
                     const vv = window.visualViewport;
-                    el.style.transform = `translateY(${vv.offsetTop}px)`;
+                    // transform-ის ნაცვლად ვიყენებთ top-ს, რომ აცილება (lag) არ მოხდეს
+                    el.style.top = `${vv.offsetTop}px`;
                     el.style.height = `${vv.height}px`;
                 });
             }
@@ -1695,6 +1697,8 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 }
 
 
+    
+
     // ---- BANNER CLEANUP ----
 
     setTimeout(() => {
@@ -1760,3 +1764,4 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
