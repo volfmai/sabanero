@@ -692,7 +692,7 @@
         /* PRELOADER */
 
         .ad-preloader {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
@@ -709,7 +709,7 @@
             pointer-events: none;
             isolation: isolate;
             outline: none;
-            will-change: top, height;
+            will-change: transform;
         }
 
         .ad-preloader.visible {
@@ -1609,13 +1609,16 @@ if (el) {
     
     function syncPreloader() {
         const _vv = window.visualViewport;
-        if (!el || !_vv) return;
+        const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (!el) return;
         requestAnimationFrame(() => {
-            el.style.top = _vv.offsetTop + 'px';
-            el.style.height = _vv.height + 'px';
+            const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
+            el.style.transform = `translateY(${_yPos}px)`;
+            if (_vv) el.style.height = _vv.height + 'px';
         });
     }
 
+    window.addEventListener('scroll', syncPreloader, { passive: true });
     if (window.visualViewport) {
         window.visualViewport.addEventListener('scroll', syncPreloader);
         window.visualViewport.addEventListener('resize', syncPreloader);
@@ -1627,6 +1630,7 @@ if (el) {
 
     const hideP = (elem) => {
         if (!elem || !elem.classList.contains('visible')) return;
+        window.removeEventListener('scroll', syncPreloader);
         window.visualViewport?.removeEventListener('scroll', syncPreloader);
         window.visualViewport?.removeEventListener('resize', syncPreloader);
         
@@ -1634,27 +1638,26 @@ if (el) {
         window.dispatchEvent(new CustomEvent('preloaderClosed'));
         elem.classList.remove('visible');
     };
-  
-                if (tBar) {
-                    tBar.style.webkitAnimation = 'none';
-                    tBar.style.animation       = 'none';
-                    tBar.style.strokeDashoffset = '101';
-                    const duration  = TIMING.PRELOADER_AUTO_CLOSE;
-                    const startTime = performance.now();
 
-                    function animate(currentTime) {
-                        const elapsed  = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        tBar.style.strokeDashoffset = 101 - (progress * 101);
-                        if (progress < 1) {
-                            requestAnimationFrame(animate);
-                        } else {
-                            hideP(el);
-                        }
-                    }
-                    requestAnimationFrame(animate);
-                }
+    if (tBar) {
+        tBar.style.webkitAnimation = 'none';
+        tBar.style.animation = 'none';
+        tBar.style.strokeDashoffset = '101';
+        const duration = TIMING.PRELOADER_AUTO_CLOSE;
+        const startTime = performance.now();
 
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            tBar.style.strokeDashoffset = 101 - (progress * 101);
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                hideP(el);
+            }
+        }
+        requestAnimationFrame(animate);
+    }
                 if (img) {
                     img.onerror = () => { img.style.display = 'none'; };
                     img.onload  = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
@@ -1671,13 +1674,13 @@ if (el) {
                     if (typeof trackClick === 'function') trackClick('preloader', realAdId);
                 });
             }
+            
         } else {
             window.dispatchEvent(new CustomEvent('preloaderClosed'));
         }
-    } else {
-        window.dispatchEvent(new CustomEvent('preloaderClosed'));
-    }
-
+ } else {
+    window.dispatchEvent(new CustomEvent('preloaderClosed'));
+} 
 
     // ---- BANNER CLEANUP ----
 
@@ -1744,6 +1747,7 @@ if (el) {
 
 </body>
 </html>
+
 
 
 
