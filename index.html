@@ -729,11 +729,7 @@
         }
 
         .ad-preloader-box {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform: translate3d(-50%, 0, 0);
-            pointer-events: auto;
+            position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -743,8 +739,6 @@
             isolation: isolate;
             max-width: 100%;
             max-height: 100%;
-            pointer-events: auto; 
-            will-change: transform;
         }
 
         .ad-preloader-box img,
@@ -1786,6 +1780,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
