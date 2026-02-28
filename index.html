@@ -1606,20 +1606,37 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             const tBar = el.querySelector('.ad-timer-bar');
             el.setAttribute('aria-hidden', 'false');
 
+            // --- კლაუდის ფიქსის დასაწყისი ---
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            let ticking = false;
+
             function syncPreloader() {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                if (ticking) return;
+                ticking = true;
+
                 requestAnimationFrame(() => {
-                    el.style.top = scrollTop + 'px';
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const vv = window.visualViewport;
+                    const height = vv ? vv.height : window.innerHeight;
+
+                    if (isIOS && vv) {
+                        el.style.top = (scrollTop + vv.offsetTop) + 'px';
+                    } else {
+                        el.style.top = scrollTop + 'px';
+                    }
+
                     el.style.height = height + 'px';
+                    ticking = false;
                 });
             }
 
             window.addEventListener('scroll', syncPreloader, { passive: true });
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', syncPreloader);
+                window.visualViewport.addEventListener('scroll', syncPreloader);
             }
             syncPreloader();
+            // --- კლაუდის ფიქსის დასასრული ---
 
             el.classList.add('visible');
             el.focus();
@@ -1629,6 +1646,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
                 window.removeEventListener('scroll', syncPreloader);
                 if (window.visualViewport) {
                     window.visualViewport.removeEventListener('resize', syncPreloader);
+                    window.visualViewport.removeEventListener('scroll', syncPreloader);
                 }
                 localStorage.setItem('p_last_time', Date.now().toString());
                 window.dispatchEvent(new CustomEvent('preloaderClosed'));
@@ -1743,6 +1761,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
