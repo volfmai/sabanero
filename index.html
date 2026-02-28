@@ -1602,7 +1602,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
     if (isFirstVisit || (cooldownPassed && Math.random() > 0.3)) {
         const idx = Math.floor(Math.random() * preloaders.length);
         const el = preloaders[idx];
-        const box = el.querySelector('.ad-preloader-box'); // საჭიროა სინქრონიზაციისთვის
+        const box = el.querySelector('.ad-preloader-box'); 
         const img = el.querySelector('.js-ad-image');
         const tBar = el.querySelector('.ad-timer-bar');
         const isExternal = el.querySelector('.ad-external-video-wrapper');
@@ -1611,7 +1611,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
         let rafId = null;
 
-        // ✅ 1. Named function - ცენტრირებისთვის და სქროლის დასაჭერად
         const syncPreloader = () => {
             if (!el.classList.contains('visible')) return;
 
@@ -1619,25 +1618,18 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
                 if (rafId) cancelAnimationFrame(rafId);
                 rafId = requestAnimationFrame(() => {
                     const vv = window.visualViewport;
-                    // Clamping: მინიმუმ 0, რომ WebKit-ის ბაგმა ზემოთ არ ააგდოს
-                    const rawTop = vv.offsetTop + (vv.height - box.offsetHeight) / 2;
-                    const safeTop = Math.max(0, rawTop); 
                     
-                    // translate3d იყენებს GPU-ს და ინარჩუნებს X ცენტრირებას
-                    box.style.transform = `translate3d(-50%, ${safeTop}px, 0)`;
+                    // ვამოძრავებთ მთლიან კონტეინერს (el) იქ, სადაც მომხმარებელი იყურება
+                    // ეს არ აფუჭებს box-ის შიდა ცენტრირებას და ზომებს
+                    el.style.transform = `translateY(${vv.offsetTop}px)`;
+                    el.style.height = `${vv.height}px`; 
                 });
-            } else {
-                // Fallback თუ visualViewport არ არსებობს
-                box.style.top = '50%';
-                box.style.left = '50%';
-                box.style.transform = 'translate3d(-50%, -50%, 0)';
             }
         };
 
         const hideP = () => {
             if (!el.classList.contains('visible')) return;
 
-            // ✅ 2. ივენთების გასუფთავება (მეხსიერების დაცვა)
             window.removeEventListener('orientationchange', syncPreloader);
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('scroll', syncPreloader);
@@ -1650,7 +1642,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             el.classList.remove('visible');
         };
 
-        // ✅ 3. ივენთების მიბმა
         window.addEventListener('orientationchange', syncPreloader);
         if (window.visualViewport) {
             window.visualViewport.addEventListener('scroll', syncPreloader, { passive: true });
@@ -1659,10 +1650,9 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
         el.setAttribute('aria-hidden', 'false');
         el.classList.add('visible');
-        syncPreloader(); // საწყისი პოზიცია
+        syncPreloader(); 
         el.focus();
 
-        // Timer animation (შენი ორიგინალი)
         if (tBar) {
             tBar.style.webkitAnimation = 'none';
             tBar.style.animation = 'none';
@@ -1683,24 +1673,21 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             requestAnimationFrame(animate);
         }
 
-        // Image/video load
         if (img) {
             img.onerror = () => { img.style.display = 'none'; };
             img.onload = () => { 
                 requestAnimationFrame(() => {
                     img.classList.add('loaded');
-                    syncPreloader(); // როცა სურათი ჩაიტვირთება, ზომა შეიცვლება და თავიდან გასწორდეს
+                    syncPreloader(); 
                 }); 
             };
             if (img.complete) img.onload();
         }
 
-        // External video
         if (isExternal) {
             window.addEventListener('externalAdStarted', hideP, { once: true });
         }
 
-        // Tracking
         const realAdId = el.dataset.adId || el.id;
         if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
         el.querySelector('a')?.addEventListener('click', () => {
@@ -1780,6 +1767,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
