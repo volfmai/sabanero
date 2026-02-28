@@ -705,11 +705,11 @@
             box-sizing: border-box;
             overflow: hidden;
             opacity: 0;
-            transition: opacity 0.3s ease, visibility 0.3s;
+            transition: opacity 0.3s ease;
             pointer-events: none;
             isolation: isolate;
             outline: none;
-            will-change: top, height;
+            will-change: transform;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -1607,39 +1607,40 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el) {
                 const tBar = el.querySelector('.ad-timer-bar');
                 el.setAttribute('aria-hidden', 'false');
+                const vv = window.visualViewport;
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const yPos = vv ? (scrollTop + vv.offsetTop) : scrollTop;
+                el.style.transform = `translateY(${yPos}px)`;
+                if (vv) el.style.height = vv.height + 'px';
                 el.classList.add('visible');
                 el.focus();
-
-             function syncPreloader() {
-               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-               const vv = window.visualViewport;
-            if (!el) return;
-           requestAnimationFrame(() => {
-          el.style.top = scrollTop + 'px';
-
-        if (vv) {
-            el.style.height = vv.height + 'px';
-            el.style.left = vv.offsetLeft + 'px';
-        }
-    });
-}
-  window.addEventListener('scroll', syncPreloader, { passive: true });
-               if (window.visualViewport) {
-            window.visualViewport.addEventListener('scroll', syncPreloader);
-            window.visualViewport.addEventListener('resize', syncPreloader);
-            syncPreloader();
-            }
-                const hideP = (elem) => {
-                    if (!elem || !elem.classList.contains('visible')) return;
-                    
-                    window.removeEventListener('scroll', syncPreloader);
-                    window.visualViewport?.removeEventListener('scroll', syncPreloader);
-                    window.visualViewport?.removeEventListener('resize', syncPreloader);
-                    localStorage.setItem('p_last_time', Date.now().toString());
-                    window.dispatchEvent(new CustomEvent('preloaderClosed'));
-                    elem.classList.remove('visible');
-                };
-
+                
+function syncPreloader() {
+    const _vv = window.visualViewport;
+    const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  if (!el) return;
+    requestAnimationFrame(() => {
+const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
+     el.style.transform = `translateY(${_yPos}px)`;
+     if (_vv) el.style.height = _vv.height + 'px';
+        });
+    }
+         
+window.addEventListener('scroll', syncPreloader, { passive: true });
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('scroll', syncPreloader);
+    window.visualViewport.addEventListener('resize', syncPreloader);
+}          
+const hideP = (elem) => {
+    if (!elem || !elem.classList.contains('visible')) return;
+    window.removeEventListener('scroll', syncPreloader);
+    window.visualViewport?.removeEventListener('scroll', syncPreloader);
+    window.visualViewport?.removeEventListener('resize', syncPreloader);
+    
+    localStorage.setItem('p_last_time', Date.now().toString());
+    window.dispatchEvent(new CustomEvent('preloaderClosed'));
+    elem.classList.remove('visible');
+};
                 if (tBar) {
                     tBar.style.webkitAnimation = 'none';
                     tBar.style.animation       = 'none';
@@ -1657,7 +1658,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             hideP(el);
                         }
                     }
-
                     requestAnimationFrame(animate);
                 }
 
@@ -1750,6 +1750,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
