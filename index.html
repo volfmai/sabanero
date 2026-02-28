@@ -693,7 +693,10 @@
 
         .ad-preloader {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100svh;
             z-index: 200000;
             display: none;
             align-items: center;
@@ -703,6 +706,7 @@
             padding-bottom: calc(30px + env(safe-area-inset-bottom));
             box-sizing: border-box;
             overflow: hidden;
+            touch-action: none;
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
@@ -1728,6 +1732,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
