@@ -709,7 +709,6 @@
             pointer-events: none;
             isolation: isolate;
             outline: none;
-            will-change: transform;
         }
 
         .ad-preloader.visible {
@@ -1588,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- PRELOADER LOGIC ----
 
-   const preloaders = [...document.querySelectorAll('.js-preloader')];
+const preloaders = [...document.querySelectorAll('.js-preloader')];
 
 if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
     const now = Date.now();
@@ -1608,22 +1607,19 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             el.setAttribute('aria-hidden', 'false');
 
             function syncPreloader() {
-                const _vv = window.visualViewport;
-                const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                if (!el) return;
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
                 requestAnimationFrame(() => {
-                    const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
-                    el.style.transform = `translateY(${_yPos}px)`;
-                    if (_vv) el.style.height = _vv.height + 'px';
+                    el.style.top = scrollTop + 'px';
+                    el.style.height = height + 'px';
                 });
             }
 
             window.addEventListener('scroll', syncPreloader, { passive: true });
             if (window.visualViewport) {
-                window.visualViewport.addEventListener('scroll', syncPreloader);
                 window.visualViewport.addEventListener('resize', syncPreloader);
-                syncPreloader();
             }
+            syncPreloader();
 
             el.classList.add('visible');
             el.focus();
@@ -1631,8 +1627,9 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             const hideP = (elem) => {
                 if (!elem || !elem.classList.contains('visible')) return;
                 window.removeEventListener('scroll', syncPreloader);
-                window.visualViewport?.removeEventListener('scroll', syncPreloader);
-                window.visualViewport?.removeEventListener('resize', syncPreloader);
+                if (window.visualViewport) {
+                    window.visualViewport.removeEventListener('resize', syncPreloader);
+                }
                 localStorage.setItem('p_last_time', Date.now().toString());
                 window.dispatchEvent(new CustomEvent('preloaderClosed'));
                 elem.classList.remove('visible');
@@ -1746,6 +1743,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
