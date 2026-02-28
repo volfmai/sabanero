@@ -1599,81 +1599,62 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
         const idx = Math.floor(Math.random() * preloaders.length);
         const el = preloaders[idx];
         const img = el.querySelector('.js-ad-image');
+        const tBar = el.querySelector('.ad-timer-bar');
         const isExternal = el.querySelector('.ad-external-video-wrapper');
 
-        if (el) {
-            const tBar = el.querySelector('.ad-timer-bar');
-            el.setAttribute('aria-hidden', 'false');
+        if (!el) return;
 
-            let currentY = window.pageYOffset || document.documentElement.scrollTop;
-            let targetY = currentY;
-            const ease = 0.05; 
-            let animationFrameId;
+        el.setAttribute('aria-hidden', 'false');
+        el.classList.add('visible');
+        el.focus();
 
-            function syncPreloader() {
-                targetY = window.pageYOffset || document.documentElement.scrollTop;
-                
-                let diff = targetY - currentY;
-                currentY += diff * ease;
+        const hideP = () => {
+            if (!el.classList.contains('visible')) return;
+            localStorage.setItem('p_last_time', Date.now().toString());
+            window.dispatchEvent(new CustomEvent('preloaderClosed'));
+            el.classList.remove('visible');
+        };
 
-                const vv = window.visualViewport;
-                const height = vv ? vv.height : window.innerHeight;
+        // Timer animation
+        if (tBar) {
+            tBar.style.webkitAnimation = 'none';
+            tBar.style.animation = 'none';
+            tBar.style.strokeDashoffset = '101';
+            const duration = TIMING.PRELOADER_AUTO_CLOSE;
+            const startTime = performance.now();
 
-                el.style.top = Math.round(currentY) + 'px';
-                el.style.height = height + 'px';
-
-                animationFrameId = requestAnimationFrame(syncPreloader);
-            }
-
-            animationFrameId = requestAnimationFrame(syncPreloader);
-
-            el.classList.add('visible');
-            el.focus();
-
-            const hideP = (elem) => {
-                if (!elem || !elem.classList.contains('visible')) return;
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
-                localStorage.setItem('p_last_time', Date.now().toString());
-                window.dispatchEvent(new CustomEvent('preloaderClosed'));
-                elem.classList.remove('visible');
-            };
-
-            if (tBar) {
-                tBar.style.webkitAnimation = 'none';
-                tBar.style.animation = 'none';
-                tBar.style.strokeDashoffset = '101';
-                const duration = TIMING.PRELOADER_AUTO_CLOSE;
-                const startTime = performance.now();
-
-                function animate(currentTime) {
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    tBar.style.strokeDashoffset = 101 - (progress * 101);
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        hideP(el);
-                    }
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                tBar.style.strokeDashoffset = 101 - (progress * 101);
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    hideP();
                 }
-                requestAnimationFrame(animate);
             }
-
-            if (img) {
-                img.onerror = () => { img.style.display = 'none'; };
-                img.onload = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
-                if (img.complete) img.onload();
-            }
-
-            if (isExternal) {
-                window.addEventListener('externalAdStarted', () => hideP(el), { once: true });
-            }
-
-            const realAdId = el.dataset.adId || el.id;
-            if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
-            el.querySelector('a')?.addEventListener('click', () => {
-                if (typeof trackClick === 'function') trackClick('preloader', realAdId);
-            });
+            requestAnimationFrame(animate);
         }
+
+        // Image/video load
+        if (img) {
+            img.onerror = () => { img.style.display = 'none'; };
+            img.onload = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
+            if (img.complete) img.onload();
+        }
+
+        // External video
+        if (isExternal) {
+            window.addEventListener('externalAdStarted', hideP, { once: true });
+        }
+
+        // Tracking
+        const realAdId = el.dataset.adId || el.id;
+        if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
+        el.querySelector('a')?.addEventListener('click', () => {
+            if (typeof trackClick === 'function') trackClick('preloader', realAdId);
+        });
+
     } else {
         window.dispatchEvent(new CustomEvent('preloaderClosed'));
     }
@@ -1747,6 +1728,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
