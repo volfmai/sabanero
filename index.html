@@ -1609,8 +1609,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.add('visible');
                 el.focus();
 
+                function syncPreloader() {
+               const vv = window.visualViewport;
+               if (!vv) return;
+               el.style.top    = vv.offsetTop + 'px';
+               el.style.height = vv.height + 'px';
+            }
+
+               if (window.visualViewport) {
+            window.visualViewport.addEventListener('scroll', syncPreloader);
+            window.visualViewport.addEventListener('resize', syncPreloader);
+            syncPreloader();
+            }
                 const hideP = (elem) => {
                     if (!elem || !elem.classList.contains('visible')) return;
+                    window.visualViewport?.removeEventListener('scroll', syncPreloader);
+                    window.visualViewport?.removeEventListener('resize', syncPreloader);
                     localStorage.setItem('p_last_time', Date.now().toString());
                     window.dispatchEvent(new CustomEvent('preloaderClosed'));
                     elem.classList.remove('visible');
@@ -1726,6 +1740,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
