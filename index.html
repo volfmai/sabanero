@@ -693,7 +693,7 @@
 
         .ad-preloader {
             position: fixed;
-            top: 0;
+            top: env(safe-area-inset-top, 0px);
             left: 0;
             bottom: 0;
             width: 100vw;
@@ -1724,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
