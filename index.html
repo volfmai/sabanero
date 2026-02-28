@@ -1588,99 +1588,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- PRELOADER LOGIC ----
 
-    const preloaders = [...document.querySelectorAll('.js-preloader')];
+   const preloaders = [...document.querySelectorAll('.js-preloader')];
 
-    if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
-        const now        = Date.now();
-        const lastShown  = parseInt(localStorage.getItem('p_last_time') || '0', 10);
-        const COOLDOWN   = 45000;
-        const isFirstVisit   = lastShown === 0;
-        const cooldownPassed = (now - lastShown >= COOLDOWN);
+if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
+    const now = Date.now();
+    const lastShown = parseInt(localStorage.getItem('p_last_time') || '0', 10);
+    const COOLDOWN = 45000;
+    const isFirstVisit = lastShown === 0;
+    const cooldownPassed = (now - lastShown >= COOLDOWN);
 
-        if (isFirstVisit || (cooldownPassed && Math.random() > 0.3)) {
-            const idx        = Math.floor(Math.random() * preloaders.length);
-            const el         = preloaders[idx];
-            const img        = el.querySelector('.js-ad-image');
-            const isExternal = el.querySelector('.ad-external-video-wrapper');
+    if (isFirstVisit || (cooldownPassed && Math.random() > 0.3)) {
+        const idx = Math.floor(Math.random() * preloaders.length);
+        const el = preloaders[idx];
+        const img = el.querySelector('.js-ad-image');
+        const isExternal = el.querySelector('.ad-external-video-wrapper');
 
-if (el) {
-    const tBar = el.querySelector('.ad-timer-bar');
-    el.setAttribute('aria-hidden', 'false');
-    
-    function syncPreloader() {
-        const _vv = window.visualViewport;
-        const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        if (!el) return;
-        requestAnimationFrame(() => {
-            const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
-            el.style.transform = `translateY(${_yPos}px)`;
-            if (_vv) el.style.height = _vv.height + 'px';
-        });
-    }
+        if (el) {
+            const tBar = el.querySelector('.ad-timer-bar');
+            el.setAttribute('aria-hidden', 'false');
 
-    window.addEventListener('scroll', syncPreloader, { passive: true });
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('scroll', syncPreloader);
-        window.visualViewport.addEventListener('resize', syncPreloader);
-        syncPreloader();
-    }
-
-    el.classList.add('visible');
-    el.focus();
-
-    const hideP = (elem) => {
-        if (!elem || !elem.classList.contains('visible')) return;
-        window.removeEventListener('scroll', syncPreloader);
-        window.visualViewport?.removeEventListener('scroll', syncPreloader);
-        window.visualViewport?.removeEventListener('resize', syncPreloader);
-        
-        localStorage.setItem('p_last_time', Date.now().toString());
-        window.dispatchEvent(new CustomEvent('preloaderClosed'));
-        elem.classList.remove('visible');
-    };
-
-    if (tBar) {
-        tBar.style.webkitAnimation = 'none';
-        tBar.style.animation = 'none';
-        tBar.style.strokeDashoffset = '101';
-        const duration = TIMING.PRELOADER_AUTO_CLOSE;
-        const startTime = performance.now();
-
-        function animate(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            tBar.style.strokeDashoffset = 101 - (progress * 101);
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                hideP(el);
-            }
-        }
-        requestAnimationFrame(animate);
-    }
-                if (img) {
-                    img.onerror = () => { img.style.display = 'none'; };
-                    img.onload  = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
-                    if (img.complete) img.onload();
-                }
-
-                if (isExternal) {
-                    window.addEventListener('externalAdStarted', () => hideP(el), { once: true });
-                }
-
-                const realAdId = el.dataset.adId || el.id;
-                if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
-                el.querySelector('a')?.addEventListener('click', () => {
-                    if (typeof trackClick === 'function') trackClick('preloader', realAdId);
+            function syncPreloader() {
+                const _vv = window.visualViewport;
+                const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (!el) return;
+                requestAnimationFrame(() => {
+                    const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
+                    el.style.transform = `translateY(${_yPos}px)`;
+                    if (_vv) el.style.height = _vv.height + 'px';
                 });
             }
-            
-        } else {
-            window.dispatchEvent(new CustomEvent('preloaderClosed'));
+
+            window.addEventListener('scroll', syncPreloader, { passive: true });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('scroll', syncPreloader);
+                window.visualViewport.addEventListener('resize', syncPreloader);
+                syncPreloader();
+            }
+
+            el.classList.add('visible');
+            el.focus();
+
+            const hideP = (elem) => {
+                if (!elem || !elem.classList.contains('visible')) return;
+                window.removeEventListener('scroll', syncPreloader);
+                window.visualViewport?.removeEventListener('scroll', syncPreloader);
+                window.visualViewport?.removeEventListener('resize', syncPreloader);
+                localStorage.setItem('p_last_time', Date.now().toString());
+                window.dispatchEvent(new CustomEvent('preloaderClosed'));
+                elem.classList.remove('visible');
+            };
+
+            if (tBar) {
+                tBar.style.webkitAnimation = 'none';
+                tBar.style.animation = 'none';
+                tBar.style.strokeDashoffset = '101';
+                const duration = TIMING.PRELOADER_AUTO_CLOSE;
+                const startTime = performance.now();
+
+                function animate(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    tBar.style.strokeDashoffset = 101 - (progress * 101);
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        hideP(el);
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            if (img) {
+                img.onerror = () => { img.style.display = 'none'; };
+                img.onload = () => { requestAnimationFrame(() => img.classList.add('loaded')); };
+                if (img.complete) img.onload();
+            }
+
+            if (isExternal) {
+                window.addEventListener('externalAdStarted', () => hideP(el), { once: true });
+            }
+
+            const realAdId = el.dataset.adId || el.id;
+            if (typeof trackImpression === 'function') trackImpression('preloader', realAdId);
+            el.querySelector('a')?.addEventListener('click', () => {
+                if (typeof trackClick === 'function') trackClick('preloader', realAdId);
+            });
         }
- } else {
+    } else {
+        window.dispatchEvent(new CustomEvent('preloaderClosed'));
+    }
+} else {
     window.dispatchEvent(new CustomEvent('preloaderClosed'));
-} 
+}
 
     // ---- BANNER CLEANUP ----
 
@@ -1747,6 +1746,7 @@ if (el) {
 
 </body>
 </html>
+
 
 
 
