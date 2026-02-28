@@ -1606,8 +1606,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             const tBar = el.querySelector('.ad-timer-bar');
             el.setAttribute('aria-hidden', 'false');
 
-            // --- კლაუდის ფიქსის დასაწყისი ---
-            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
             let ticking = false;
 
             function syncPreloader() {
@@ -1619,13 +1617,9 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
                     const vv = window.visualViewport;
                     const height = vv ? vv.height : window.innerHeight;
 
-                    if (isIOS && vv) {
-                        el.style.top = (scrollTop + vv.offsetTop) + 'px';
-                    } else {
-                        el.style.top = scrollTop + 'px';
-                    }
-
+                    el.style.top = scrollTop + 'px';
                     el.style.height = height + 'px';
+                    
                     ticking = false;
                 });
             }
@@ -1636,7 +1630,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
                 window.visualViewport.addEventListener('scroll', syncPreloader);
             }
             syncPreloader();
-            // --- კლაუდის ფიქსის დასასრული ---
 
             el.classList.add('visible');
             el.focus();
@@ -1696,6 +1689,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
     window.dispatchEvent(new CustomEvent('preloaderClosed'));
 }
 
+    
     // ---- BANNER CLEANUP ----
 
     setTimeout(() => {
@@ -1761,6 +1755,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
