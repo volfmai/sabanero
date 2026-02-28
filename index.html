@@ -1493,8 +1493,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.addEventListener('wheel',      onWheel,      { passive: true });
+       if (!isIOS) {
         window.addEventListener('touchstart', onTouchStart, { passive: true });
         window.addEventListener('touchend',   onTouchEnd,   { passive: true });
+      }
 
         // Close Logic
         const closeBanner = e => {
@@ -1726,6 +1728,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
