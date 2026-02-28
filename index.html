@@ -692,7 +692,7 @@
         /* PRELOADER */
 
         .ad-preloader {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
@@ -1617,19 +1617,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 
 function syncPreloader() {
     const _vv = window.visualViewport;
-    const _scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   if (!el) return;
     requestAnimationFrame(() => {
-const _yPos = _vv ? (_scrollTop + _vv.offsetTop) : _scrollTop;
-     el.style.transform = `translateY(${_yPos}px)`;
-     if (_vv) el.style.height = _vv.height + 'px';
-        });
-    }
+        el.style.top = _vv.offsetTop + 'px';
+        el.style.height = _vv.height + 'px';
+    });
+}
          
-window.addEventListener('scroll', syncPreloader, { passive: true });
 if (window.visualViewport) {
     window.visualViewport.addEventListener('scroll', syncPreloader);
     window.visualViewport.addEventListener('resize', syncPreloader);
+    syncPreloader();
 }          
 const hideP = (elem) => {
     if (!elem || !elem.classList.contains('visible')) return;
@@ -1750,6 +1748,7 @@ const hideP = (elem) => {
 
 </body>
 </html>
+
 
 
 
