@@ -1614,9 +1614,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const vv = window.visualViewport;
     if (!vv) return;
     requestAnimationFrame(() => {
- l.style.top = vv.offsetTop + 'px';
- l.style.left = vv.offsetLeft + 'px';
- l.style.height = vv.height + 'px';
+ el.style.top = vv.offsetTop + 'px';
+ el.style.left = vv.offsetLeft + 'px';
+ el.style.height = vv.height + 'px';
     });
 }
                if (window.visualViewport) {
@@ -1743,6 +1743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
