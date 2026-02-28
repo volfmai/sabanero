@@ -1606,41 +1606,34 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             const tBar = el.querySelector('.ad-timer-bar');
             el.setAttribute('aria-hidden', 'false');
 
-            let ticking = false;
+            let currentY = window.pageYOffset || document.documentElement.scrollTop;
+            let targetY = currentY;
+            const ease = 0.05; 
+            let animationFrameId;
 
             function syncPreloader() {
-                if (ticking) return;
-                ticking = true;
+                targetY = window.pageYOffset || document.documentElement.scrollTop;
+                
+                let diff = targetY - currentY;
+                currentY += diff * ease;
 
-                requestAnimationFrame(() => {
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const vv = window.visualViewport;
-                    const height = vv ? vv.height : window.innerHeight;
+                const vv = window.visualViewport;
+                const height = vv ? vv.height : window.innerHeight;
 
-                    el.style.top = scrollTop + 'px';
-                    el.style.height = height + 'px';
-                    
-                    ticking = false;
-                });
+                el.style.top = Math.round(currentY) + 'px';
+                el.style.height = height + 'px';
+
+                animationFrameId = requestAnimationFrame(syncPreloader);
             }
 
-            window.addEventListener('scroll', syncPreloader, { passive: true });
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', syncPreloader);
-                window.visualViewport.addEventListener('scroll', syncPreloader);
-            }
-            syncPreloader();
+            animationFrameId = requestAnimationFrame(syncPreloader);
 
             el.classList.add('visible');
             el.focus();
 
             const hideP = (elem) => {
                 if (!elem || !elem.classList.contains('visible')) return;
-                window.removeEventListener('scroll', syncPreloader);
-                if (window.visualViewport) {
-                    window.visualViewport.removeEventListener('resize', syncPreloader);
-                    window.visualViewport.removeEventListener('scroll', syncPreloader);
-                }
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 localStorage.setItem('p_last_time', Date.now().toString());
                 window.dispatchEvent(new CustomEvent('preloaderClosed'));
                 elem.classList.remove('visible');
@@ -1755,6 +1748,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
