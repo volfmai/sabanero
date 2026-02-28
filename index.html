@@ -1631,6 +1631,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
                 const hideP = (elem) => {
                     if (!elem || !elem.classList.contains('visible')) return;
+                    
+                    window.removeEventListener('scroll', syncPreloader);
                     window.visualViewport?.removeEventListener('scroll', syncPreloader);
                     window.visualViewport?.removeEventListener('resize', syncPreloader);
                     localStorage.setItem('p_last_time', Date.now().toString());
@@ -1748,6 +1750,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
