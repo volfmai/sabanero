@@ -693,9 +693,10 @@
 
         .ad-preloader {
             position: fixed;
+            top: 0;
             left: 0;
             width: 100vw;
-            height: 100svh;
+            height: 100vh;
             z-index: 200000;
             display: none;
             align-items: center;
@@ -708,8 +709,7 @@
             pointer-events: none;
             isolation: isolate;
             outline: none;
-            will-change: transform, height;
-            transform: translateY(0);
+            will-change: top, height;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -1742,6 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
