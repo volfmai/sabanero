@@ -695,6 +695,7 @@
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
             bottom: 0;
             width: 100vw;
             height: 100svh;
@@ -702,8 +703,9 @@
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 30px;
+            padding: calc(env(safe-area-inset-top, 0px) + 30px) 30px;
             box-sizing: border-box;
+            overflow: hidden;
             opacity: 0;
             transition: opacity 0.3s ease, visibility 0.3s;
             pointer-events: none;
@@ -1725,6 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
