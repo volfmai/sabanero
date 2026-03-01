@@ -1614,18 +1614,14 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
         const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
         const syncPreloader = () => {
-            if (!el.classList.contains('visible')) return;
+            if (!el.classList.contains('visible') || !window.visualViewport) return;
 
-            if (window.visualViewport) {
+            // ანდროიდზე საერთოდ არაფერს აკეთებს, რაც კლავს ლაგს
+            if (isIOS) {
                 if (rafId) cancelAnimationFrame(rafId);
                 rafId = requestAnimationFrame(() => {
                     const vv = window.visualViewport;
-                    
-                    // Android-ზე offsetTop არ შეიცვლება სქროლისას (რადგან scroll ივენთი არ გაეშვება)
-                    // რითაც მოვიშორებთ შავ ზოლს (Lag). iOS-ზე კი ჩვეულებრივ დასინქრონდება.
-                    if (isIOS) {
-                        el.style.top = `${vv.offsetTop}px`;
-                    }
+                    el.style.top = `${vv.offsetTop}px`;
                     el.style.height = `${vv.height}px`;
                 });
             }
@@ -1635,8 +1631,8 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             if (!el.classList.contains('visible')) return;
 
             window.removeEventListener('orientationchange', syncPreloader);
-            if (window.visualViewport) {
-                if (isIOS) window.visualViewport.removeEventListener('scroll', syncPreloader);
+            if (window.visualViewport && isIOS) {
+                window.visualViewport.removeEventListener('scroll', syncPreloader);
                 window.visualViewport.removeEventListener('resize', syncPreloader);
             }
             if (rafId) cancelAnimationFrame(rafId);
@@ -1646,18 +1642,19 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
             el.classList.remove('visible');
         };
 
-        window.addEventListener('orientationchange', syncPreloader);
-        if (window.visualViewport) {
-            // scroll მხოლოდ აიფონისთვის
-            if (isIOS) {
-                window.visualViewport.addEventListener('scroll', syncPreloader, { passive: true });
-            }
+        // ივენთები მხოლოდ აიფონისთვის
+        if (window.visualViewport && isIOS) {
+            window.visualViewport.addEventListener('scroll', syncPreloader, { passive: true });
             window.visualViewport.addEventListener('resize', syncPreloader, { passive: true });
+            window.addEventListener('orientationchange', syncPreloader);
         }
 
         el.setAttribute('aria-hidden', 'false');
         el.classList.add('visible');
+        
+        // პირველადი გამოძახება მაინც გვჭირდება ორივესთვის საწყისი ზომისთვის
         syncPreloader();
+        
         el.focus();
 
         if (tBar) {
@@ -1775,6 +1772,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
