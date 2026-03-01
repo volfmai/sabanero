@@ -1613,18 +1613,19 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
         let rafId = null;
         const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-        const syncPreloader = () => {
-            if (!el.classList.contains('visible') || !window.visualViewport) return;
-            if (isIOS) {
-                if (rafId) cancelAnimationFrame(rafId);
-                rafId = requestAnimationFrame(() => {
-                    const vv = window.visualViewport;
-                    el.style.top = `${vv.offsetTop}px`;
-                    el.style.height = `${vv.height}px`;
-                });
-            }
-        };
-
+       const syncPreloader = () => {
+    if (!el.classList.contains('visible') || !window.visualViewport) return;
+    
+    if (isIOS) {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            const vv = window.visualViewport;
+            el.style.transition = 'none';
+            el.style.top = `${vv.offsetTop}px`;
+            el.style.height = `${vv.height}px`;
+        });
+    }
+};
         const hideP = () => {
             if (!el.classList.contains('visible')) return;
             window.removeEventListener('orientationchange', syncPreloader);
@@ -1763,6 +1764,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
