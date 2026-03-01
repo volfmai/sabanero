@@ -1494,9 +1494,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        window.addEventListener('wheel',      onWheel,      { passive: true });
-        window.addEventListener('touchstart', onTouchStart, { passive: true });
-        window.addEventListener('touchend',   onTouchEnd,   { passive: true });
+           window.addEventListener('wheel', onWheel, { passive: true });
+     if (!isIOS) {
+            window.addEventListener('touchstart', onTouchStart, { passive: true });
+            window.addEventListener('touchend',   onTouchEnd,   { passive: true });
+          }
 
         // Close Logic
         const closeBanner = e => {
@@ -1762,6 +1764,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
+
 
 
 
