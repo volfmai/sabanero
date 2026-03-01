@@ -1590,7 +1590,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- PRELOADER LOGIC ----
 
-
 const preloaders = [...document.querySelectorAll('.js-preloader')];
 
 if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)").matches)) {
@@ -1615,8 +1614,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
         const syncPreloader = () => {
             if (!el.classList.contains('visible') || !window.visualViewport) return;
-
-            // ანდროიდზე საერთოდ არაფერს აკეთებს, რაც კლავს ლაგს
             if (isIOS) {
                 if (rafId) cancelAnimationFrame(rafId);
                 rafId = requestAnimationFrame(() => {
@@ -1629,20 +1626,17 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
         const hideP = () => {
             if (!el.classList.contains('visible')) return;
-
             window.removeEventListener('orientationchange', syncPreloader);
             if (window.visualViewport && isIOS) {
                 window.visualViewport.removeEventListener('scroll', syncPreloader);
                 window.visualViewport.removeEventListener('resize', syncPreloader);
             }
             if (rafId) cancelAnimationFrame(rafId);
-
             localStorage.setItem('p_last_time', Date.now().toString());
             window.dispatchEvent(new CustomEvent('preloaderClosed'));
             el.classList.remove('visible');
         };
 
-        // ივენთები მხოლოდ აიფონისთვის
         if (window.visualViewport && isIOS) {
             window.visualViewport.addEventListener('scroll', syncPreloader, { passive: true });
             window.visualViewport.addEventListener('resize', syncPreloader, { passive: true });
@@ -1651,10 +1645,7 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
         el.setAttribute('aria-hidden', 'false');
         el.classList.add('visible');
-        
-        // პირველადი გამოძახება მაინც გვჭირდება ორივესთვის საწყისი ზომისთვის
         syncPreloader();
-        
         el.focus();
 
         if (tBar) {
@@ -1704,7 +1695,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 } else {
     window.dispatchEvent(new CustomEvent('preloaderClosed'));
 }
-
 
 
     // ---- BANNER CLEANUP ----
@@ -1772,7 +1762,6 @@ if (preloaders.length && (forceMobile || window.matchMedia("(max-width: 1280px)"
 
 </body>
 </html>
-
 
 
 
